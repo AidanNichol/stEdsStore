@@ -2,7 +2,7 @@
   "name": "StEdsStore",
   "version": "1.0.0",
   "description": "StEdwards Booking System Mobx Data Store",
-  "main": "index.js",
+  "main": "StEdsStore.js",
   "repository": {
     "url": "https://github.com/AidanNichol/StEdsStore",
     "type": "git"
@@ -10,11 +10,15 @@
   "author": "AidanNichol <aidan@nicholware.co.uk>",
   "license": "MIT",
   "dependencies": {
+    "StEdsLogger": "https://github.com/AidanNichol/StEdsLogger",
     "debug": "^4.1.0",
     "emittery": "^0.4.1",
     "lodash": "^4.17.11",
+    "logit": "^0.1.3",
     "mobx": "^5.5.2",
+    "pouchdb": "^7.0.0",
     "ramda": "^0.25.0",
+    "settings": "https://github.com/AidanNichol/settings",
     "sprintf-js": "^1.1.1",
     "xdate": "^0.8.2"
   }
