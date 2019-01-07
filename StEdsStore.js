@@ -1,8 +1,12 @@
+// const Emittery = require('emittery');
+// const emitter = new Emittery();
+
 const DS = require('./mobx/DateStore');
 const WS = require('./mobx/WalksStore');
 const MS = require('./mobx/MembersStore');
 const AS = require('./mobx/AccountsStore');
 const PS = require('./mobx/PaymentsSummaryStore');
+const debug = require('debug')
 debug.enable('updates, -pouchdb*');
 var logit = debug('updates');
 logit.log = console.log.bind(console);
@@ -11,7 +15,7 @@ console.log('logit enabled:', logit.enabled);
 
 logit.debug('debug');
 
-const init = async db => {
+const init = async (db, emitter) => {
   logit('storeLoading', 'start');
   const info = await db.info();
   logit('storeLoading', 'info', info);
@@ -26,4 +30,11 @@ const init = async db => {
   emitter.emit('startMonitoring', db);
 };
 
-module.exports = { DS, WS, MS, AS, PS, init };
+module.exports = {
+  DS,
+  WS,
+  MS,
+  AS,
+  PS,
+  init
+};
