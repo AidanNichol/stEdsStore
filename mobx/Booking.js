@@ -101,8 +101,10 @@ class Booking {
   updateBookingRequest(req) {
     if (this.status === req) return; // no change necessary
     const isRequestReversal = this.isRequestReversal(req);
+    const recent = this.logsValues.filter(log => DS.datetimeIsRecent(log.dat));
+    const dontPenalize = recent && recent.length > 0 && isRequestReversal;
     logit('cancelling', req, DS.todaysDate, this.walk.lastCancel, this.walk);
-    if (req === 'BX' && DS.todaysDate > this.walk.lastCancel) {
+    if (req === 'BX' && DS.todaysDate > this.walk.lastCancel && !dontPenalize) {
       logit('updateBookingRequest', 'yes! it is too late');
       req = this.status + 'L';
       this.paid = true;
@@ -111,23 +113,6 @@ class Booking {
 
     var newLog = { dat: DS.logTime, who: updater, req };
     this.walk.logger.info({ memId: this.memId, req }, 'Booking change');
-    const deletable = this.logsValues.filter(log => DS.datetimeIsRecent(log.dat));
-    logit('reversable?', req, {
-      reversable: isRequestReversal,
-      deletable,
-      logs: this.logs,
-    });
-    if (isRequestReversal) {
-      // if a reverse of current status
-      if (deletable && deletable.length > 0) {
-        // and original req was recent
-        deletable.forEach(log => this.logs.delete(log.dat)); //get rid of original log rather than ...
-        if (this.logsValues.filter(log => log.req !== 'A').length === 0)
-          return (this.deleteMe = true);
-        this.status = this.logsValues.filter(log => log.req !== 'A').reverse()[0].req; // reset status to last valid req
-        return;
-      }
-    }
     this.logs.set(newLog.dat, this.newBookingLog(newLog)); // adding new log
   }
 
@@ -152,11 +137,7 @@ class Booking {
     this.annotation = note;
     var newLog = { dat: DS.logTime, who: updater, req: 'A', note: note };
     this.walk.logger.info({ memId: this.memId, note }, 'Annotation change');
-    var deletable = this.logsValues.filter(
-      log => log.req === 'A' && DS.datetimeIsRecent(log.dat),
-    );
-    if (deletable.length > 0) deletable.forEach(log => this.logs.delete(log.dat));
-    logit('updateAnnotation', newLog, deletable, this.logs, note);
+    logit('updateAnnotation', newLog, this.logs, note);
     if (this.logsValues.filter(log => log.req === 'A').length > 0 || note !== '') {
       this.logs.set(newLog.dat, this.newBookingLog(newLog));
     }
