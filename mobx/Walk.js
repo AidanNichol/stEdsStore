@@ -1,5 +1,5 @@
 const R = require('ramda');
-// const _ = require( 'lodash');
+const _ = require('lodash');
 let db;
 const XDate = require('xdate');
 const emitter = require('./eventBus');
@@ -10,20 +10,15 @@ const { logger } = require('StEdsLogger');
 const Logit = require('logit');
 var logit = Logit(__filename);
 // var logit2 = logit;
-const {
-  observable,
-  computed,
-  action,
-  autorun,
-  toJS,
-  decorate,
-} = require('mobx');
-const Booking = require('../mobx/Booking');
-const MS = require('../mobx/MembersStore');
+const { observable, computed, action, autorun, toJS, decorate } = require('mobx');
+const Booking = require('./Booking');
+const MS = require('./MembersStore');
 const memberName = memId => (MS.members.get(memId) || {}).fullName;
 class Walk {
-  // addMemberName(memId){   // let memName = MS.members.get(memId).fullName;
-  // return `${memId} - ${MS.members.get(memId).fullName}`; }
+  // addMemberName(memId){
+  //   // let memName = MS.members.get(memId).fullName;
+  //   return `${memId} - ${MS.members.get(memId).fullName}`;
+  // }
 
   constructor(walk, dbset) {
     this._id = '';
@@ -49,9 +44,9 @@ class Walk {
     db = dbset;
 
     autorun(() => logit('autorun', this.report, this));
-    // Object.entries(walk.bookings || {}).forEach(([memId,
-    // booking])=>this.bookings.set(memId, new Booking(booking, memId, {getWalk:
-    // this.getWalk}))) delete walk.logs; merge(this, walk)
+    // Object.entries(walk.bookings || {}).forEach(([memId, booking])=>this.bookings.set(memId, new Booking(booking, memId, {getWalk: this.getWalk})))
+    // delete walk.logs;
+    // merge(this, walk)
     this.updateDocument(walk);
     this.logger = logger.child({ walk: this.walkId, venue: this.venue });
     this.logger.addSerializers({
@@ -89,9 +84,9 @@ class Walk {
   get code() {
     if (this.shortCode) return this.shortCode;
     return this.venue.substr(0, 4);
-    // let code = this.shortname[0] + this.shortname.substr(1).replace(/[aeiou]/gi,
-    // ''); if (code.length > 4) code = code.substr(0, 2) + code.substr(-2); return
-    // code;
+    // let code = this.shortname[0] + this.shortname.substr(1).replace(/[aeiou]/gi, '');
+    // if (code.length > 4) code = code.substr(0, 2) + code.substr(-2);
+    // return code;
   }
 
   get names() {
@@ -99,10 +94,7 @@ class Walk {
   }
 
   get bookingTotals() {
-    let totals = {
-      B: 0,
-      W: 0,
-    };
+    let totals = { B: 0, W: 0 };
     this.bookingsValues.map(({ status }) => {
       /^[BW]$/.test(status) && totals[status]++;
     });
@@ -125,8 +117,8 @@ class Walk {
       map[memId] = booking.mergeableLogs;
     }
 
-    // logit(`walkLogsByMembers ${this._id}`, map); logit(`getWalkLog ${this._id}
-    // ${activeMember}`, map[activeMember]);
+    // logit(`walkLogsByMembers ${this._id}`, map);
+    // logit(`getWalkLog ${this._id} ${activeMember}`, map[activeMember]);
     return map;
   }
 
@@ -222,10 +214,13 @@ class Walk {
   }
 
   async dbUpdate() {
+    const logFields = ['dat', 'req', 'who', 'machine', 'fixed'];
     logit('DB Update start', this);
-    let { _conflicts, ...newDoc } = toJS(this);
+    let { _conflicts, logger, ...newDoc } = _.omitBy(toJS(this), _.isFunction); //eslint-disable-line no-unused-vars
     Object.entries(newDoc.bookings).map(([memId, booking]) => {
-      newDoc.bookings[memId].logs = Object.values(booking.logs);
+      const newBooking = _.omitBy(booking, _.isFunction);
+      newBooking.logs = Object.values(newBooking.logs).map(log => _.pick(log, logFields));
+      newDoc.bookings[memId] = newBooking;
     });
 
     // newDoc.logs = Object.values(newDoc.logs)
@@ -234,22 +229,17 @@ class Walk {
     this._rev = res.rev;
     const info = await db.info();
     logit('info', info);
-    emitter.emit('dbChanged', 'walk changed');
+    await emitter.emit('dbChanged', 'walk changed');
   }
-
   updateDocument(walkDoc) {
-    // const added = R.difference(Object.keys(walkDoc.bookings),
-    // this.bookings.keys());
+    // const added = R.difference(Object.keys(walkDoc.bookings), this.bookings.keys());
     Object.entries(walkDoc.bookings || {}).forEach(([memId, booking]) => {
       if (this.bookings.has(memId))
         this.bookings.get(memId).updateBookingFromDoc(booking);
       else {
         this.bookings.set(
           memId,
-          new Booking(booking, memId, {
-            getWalk: this.getWalk,
-            walk: this,
-          }),
+          new Booking(booking, memId, { getWalk: this.getWalk, walk: this }),
         );
       }
     });
