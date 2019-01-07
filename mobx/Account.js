@@ -5,18 +5,29 @@ const R = require('ramda');
 const _ = require('lodash');
 
 // const {sprintf} = require( 'sprintf-js');
-const Logit = require('logit.js');
+const Logit = require('logit');
 var logit = Logit(__filename);
-const { observable, computed, toJS, reaction, action, decorate } = require('mobx');
+const {
+  observable,
+  computed,
+  toJS,
+  reaction,
+  action,
+  decorate
+} = require('mobx');
 const FundsManager = require('./fundsManager');
 const FundsManager0 = require('./fundsManager0');
 const MS = require('./MembersStore');
 const WS = require('./WalksStore');
 const DS = require('./DateStore');
 const PS = require('./PaymentsSummaryStore');
-let { useFullHistory } = require('settings');
+let {
+  useFullHistory
+} = require('settings');
 
-const { logger } = require('logger.js');
+const {
+  logger
+} = require('StEdsLogger');
 
 const AccLog = require('./AccLog');
 let limit;
@@ -47,8 +58,10 @@ class Account {
     this._id = 0;
     this.type = 'account';
     this._conflicts = [];
-    this.members = [];
-    this.logs = observable.map({}, { deep: false });
+    this.members = accountDoc.members || [];
+    this.logs = observable.map({}, {
+      deep: false
+    });
     this.accountId;
     this.latePaymentLogs = [];
 
@@ -62,9 +75,12 @@ class Account {
     reaction(() => this.logs.size, () => logit('autorun', this.report, this.isLoading()));
     (accountDoc.logs || []).forEach(log => this.logs.set(log.dat, new AccLog(log)));
     delete accountDoc.logs;
+    delete accountDoc.members;
     _.merge(this, accountDoc);
     // this.updateDocument(accountDoc);
-    this.logger = logger.child({ accId: `${this._id} - ${this.name}` });
+    this.logger = logger.child({
+      accId: `${this._id} - ${this.name}`
+    });
   }
 
   get accountStore() {
@@ -75,7 +91,10 @@ class Account {
 
   get name() {
     let nameMap = this.members.reduce((value, memId) => {
-      let mem = MS.members.get(memId) || { firstName: '????', lastName: memId };
+      let mem = MS.members.get(memId) || {
+        firstName: '????',
+        lastName: memId
+      };
       let lName = mem.lastName;
       value[lName] = [...(value[lName] || []), mem.firstName];
       return value;
@@ -87,7 +106,10 @@ class Account {
 
   get sortname() {
     let nameMap = this.members.reduce((value, memId) => {
-      let mem = MS.members.get(memId) || { firstName: '????', lastName: memId };
+      let mem = MS.members.get(memId) || {
+        firstName: '????',
+        lastName: memId
+      };
       let lName = mem.lastName;
       value[lName] = [...(value[lName] || []), mem.firstName];
       return value;
@@ -161,19 +183,40 @@ class Account {
 
   async deleteConflictingDocs(conflicts) {
     let docs = conflicts.map(rev => {
-      return { _id: this._id, _rev: rev, _deleted: true };
+      return {
+        _id: this._id,
+        _rev: rev,
+        _deleted: true
+      };
     });
     let res = await db.bulkDocs(docs);
     logit('deleteConflicts', this, docs, conflicts, res);
     this._conflicts = [];
   }
 
-  makePaymentToAccount({ paymentType: req, amount, note, inFull }) {
+  makePaymentToAccount({
+    paymentType: req,
+    amount,
+    note,
+    inFull
+  }) {
     // doer = yield select((state)=>state.signin.memberId);
     const who = 'M1180';
-    var logRec = { dat: DS.logTime, who, req, type: 'A', amount, note, inFull };
+    var logRec = {
+      dat: DS.logTime,
+      who,
+      req,
+      type: 'A',
+      amount,
+      note,
+      inFull
+    };
     this.logs.set(logRec.dat, new AccLog(logRec));
-    const loggerData = { req, amount, inFull };
+    const loggerData = {
+      req,
+      amount,
+      inFull
+    };
     if (note && note !== '') loggerData.note = note;
     this.logger.info(loggerData, 'Payment');
     this.fixupAccLogs();
@@ -184,7 +227,9 @@ class Account {
     let conflicts = this._conflicts;
     if (!_.isEmpty(added)) {
       Object.values(added).forEach(log => {
-        var logRec = { ...log, note: (log.note || '') + ' (?)' };
+        var logRec = { ...log,
+          note: (log.note || '') + ' (?)'
+        };
         this.logs.set(logRec.dat, new AccLog(logRec));
       });
       // doer = yield select((state)=>state.signin.memberId);
@@ -210,12 +255,19 @@ class Account {
   get accountFrame() {
     const members = new Map(
       this.members
-        .map(memId => {
-          return [memId, { memId, name: MS.members.get(memId).firstName }];
-        })
-        .sort(cmpName),
+      .map(memId => {
+        return [memId, {
+          memId,
+          name: MS.members.get(memId).firstName
+        }];
+      })
+      .sort(cmpName),
     );
-    return { accId: this._id, members, sortname: this.sortname };
+    return {
+      accId: this._id,
+      members,
+      sortname: this.sortname
+    };
   }
 
   get accountMembers() {
@@ -270,7 +322,13 @@ class Account {
     };
     const walkAndMember = log => log.walkId + log.memId;
     const dummyPayment = (cLogs, uLogs, final = false) => {
-      let aLog = { type: 'A', amount: 0, text: '', machine: 'auto', balance: 0 };
+      let aLog = {
+        type: 'A',
+        amount: 0,
+        text: '',
+        machine: 'auto',
+        balance: 0
+      };
       aLog.req = final ? '__' : '_';
       if (!final) aLog.restartPoint = true;
       aLog.dat = DS.datetimePlus1(getNewestDate(cLogs));
@@ -389,7 +447,12 @@ class Account {
       //┃   Add in the payment record suitably ajdusted            ┃
       //┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
       balance = funds.balance;
-      aLog = { ...aLog, balance, toCredit: -balance, historic, hideable };
+      aLog = { ...aLog,
+        balance,
+        toCredit: -balance,
+        historic,
+        hideable
+      };
       setLogsFrom(aLog, clearedLogs, bLogs);
       setOldLogs(aLog, clearedLogs);
       let restartPt = isRestartPoint(balance, mergedlogs, bLogs);
@@ -421,7 +484,9 @@ class Account {
       balance -= bLog.amount || 0;
       // bLog.hideable = hideable && balance === 0;
       // bLog.historic = historic;
-      unclearedLogs.push({ ...bLog, balance });
+      unclearedLogs.push({ ...bLog,
+        balance
+      });
       if (_.isEmpty(bLogs)) continue;
       if (!isRestartPoint(balance, [newestClearedLog, unclearedLogs], bLogs)) continue;
       if (!isBooking(bLog)) continue;
@@ -576,7 +641,11 @@ class Account {
       }
     }
     traceMe && this.logTableToConsole(logs);
-    traceMe && logit('second pass', logs, { lastHistory, lastHideable, lastResolved });
+    traceMe && logit('second pass', logs, {
+      lastHistory,
+      lastHideable,
+      lastResolved
+    });
 
     /*------------------------------------------------------------------------*/
     /*    third pass over the data to work out whick walks were paid for      */
@@ -709,14 +778,20 @@ class Account {
       const diffs = whatsDifferent(newVal, _.pick(actLog, props));
       console.log(log.dat, log.amount, diffs);
       delete actLog.oldLogs;
-      var logRec = { ...actLog, ...newVal };
+      var logRec = { ...actLog,
+        ...newVal
+      };
       this.logs.set(log.dat, new AccLog(logRec));
       changed = true;
     }
     // save any old debts in the account document.
 
     if (changed && save) {
-      logit('fixupAccLogs changes made', { id: this._id, old: this.logs, mergedlogs });
+      logit('fixupAccLogs changes made', {
+        id: this._id,
+        old: this.logs,
+        mergedlogs
+      });
       await this.dbUpdate();
     }
     return changed;
@@ -740,7 +815,9 @@ class Account {
     logit('confs', confs);
     let sum = {};
     confs.forEach((conf, i) => {
-      this.confLogger = this.logger.child({ confRev: conf._rev });
+      this.confLogger = this.logger.child({
+        confRev: conf._rev
+      });
       (conf.log || []).forEach(lg => {
         let [dat, , , , req, amount] = lg;
         if (req !== 'P') return;
@@ -765,20 +842,26 @@ class Account {
 /*-------------------------------------------------*/
 const getNewestDate = (...args) => {
   return args.reduce((newest, item) => {
-    const dat = _.isArray(item)
-      ? getNewestDate(...item)
-      : _.isString(item)
-        ? item
-        : item.dat;
+    const dat = _.isArray(item) ?
+      getNewestDate(...item) :
+      _.isString(item) ?
+      item :
+      item.dat;
     return dat > newest ? dat : newest;
   }, '000-00-00');
 };
 
 const getOldestDate = (...args) => {
-  return args.filter(log => log).reduce((oldest, log) => {
-    const dat = _.isArray(log) ? getOldestDate(...log) : _.isString(log) ? log : log.dat;
-    return dat < oldest ? dat : oldest;
-  }, '9999-99-99');
+  return args
+    .filter(log => log)
+    .reduce((oldest, log) => {
+      const dat = _.isArray(log) ?
+        getOldestDate(...log) :
+        _.isString(log) ?
+        log :
+        log.dat;
+      return dat < oldest ? dat : oldest;
+    }, '9999-99-99');
 };
 // function isBillable(log) {
 //   return /^[BC]X?$/.test(log.req || '');
@@ -793,6 +876,7 @@ function setHistoricFlags(logs, historic, hideable) {
     l.hideable = hideable;
   });
 }
+
 function resortAndAdjustBalance(cLog, prevBalance, historic, hideable) {
   let balance = prevBalance;
   cLog.sort(cmpDate).forEach(log => {
@@ -804,6 +888,7 @@ function resortAndAdjustBalance(cLog, prevBalance, historic, hideable) {
   });
   return balance;
 }
+
 function adjustToRestartPoint(aLogs, bLogs, darkAgesStarts) {
   const firstOKacc = findRestartPoint(aLogs, darkAgesStarts);
   if (firstOKacc >= 0) {
@@ -824,7 +909,11 @@ function findRestartPoint(aLogs, darkAgesStarts) {
   let ok = true;
   let lastDark = -1;
   for (let i = 0; i < aLogs.length; i++) {
-    const { logsFrom, restartPoint, req } = aLogs[i];
+    const {
+      logsFrom,
+      restartPoint,
+      req
+    } = aLogs[i];
     if (req === '__') return i;
     if (logsFrom && logsFrom < darkAgesStarts) {
       ok = false;
