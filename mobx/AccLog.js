@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const { observable, action, computed, decorate } = require('mobx');
-const Logit = require('logit.js');
+const Logit = require('logit');
 var logit = Logit(__filename);
 const DS = require('./DateStore');
 const dateDisplay = require('./DateStore').dispDate;

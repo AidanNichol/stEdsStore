@@ -13,7 +13,7 @@ const {
 let db;
 const Member = require('./Member');
 // const R = require( 'ramda');
-const Logit = require('logit.js');
+const Logit = require('logit');
 var logit = Logit(__filename);
 
 var coll = new Intl.Collator();

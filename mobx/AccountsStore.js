@@ -1,7 +1,7 @@
 const { observable, computed, action, runInAction, autorun, decorate } = require('mobx');
 let db;
 // const _ = require('lodash');
-const Logit = require('logit.js');
+const Logit = require('logit');
 var logit = Logit(__filename);
 const Account = require('./Account');
 

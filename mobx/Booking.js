@@ -1,6 +1,6 @@
 const { merge } = require('lodash');
 const R = require('ramda');
-const Logit = require('logit.js');
+const Logit = require('logit');
 var logit = Logit(__filename);
 const { observable, computed, action, decorate } = require('mobx');
 const BookingLog = require('./BookingLog');

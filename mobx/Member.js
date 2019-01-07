@@ -2,7 +2,7 @@ const { merge } = require('lodash');
 let db;
 const { observable, computed, action, runInAction, toJS, decorate } = require('mobx');
 const emitter = require('./eventBus');
-const Logit = require('logit.js');
+const Logit = require('logit');
 var logit = Logit(__filename);
 
 class Member {
