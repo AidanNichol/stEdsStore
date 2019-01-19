@@ -4,7 +4,6 @@ let db;
 const XDate = require('xdate');
 const emitter = require('./eventBus');
 const { merge } = require('lodash');
-// const { resolveConflicts } = require( 'settings');
 
 const { logger } = require('StEdsLogger');
 const Logit = require('logit');

@@ -1,4 +1,3 @@
-const { getSettings } = require('settings');
 const {
   observable,
   computed,
@@ -102,9 +101,9 @@ class MembersStore {
   }
 
   get membersSorted() {
-    return this.sortProp === 'name'
-      ? this.membersSortedByName
-      : this.membersSortedByMemNo;
+    return this.sortProp === 'name' ?
+      this.membersSortedByName :
+      this.membersSortedByMemNo;
   }
 
   get membersSortedByName() {
@@ -124,8 +123,7 @@ class MembersStore {
   createNewMember() {
     const memNo =
       this.membersValues.reduce((max, mem) => Math.max(max, mem.memNo), 0) + 1;
-    this.editMember = new Member(
-      {
+    this.editMember = new Member({
         _id: 'M' + memNo,
         memberId: 'M' + memNo,
         accountId: 'A' + memNo,
@@ -177,8 +175,18 @@ class MembersStore {
       if (this.activeMember) this.editMember = new Member(toJS(this.activeMember), db);
       else this.editMember = undefined;
     } else {
-      const { _id, accountId, memberId, newMember } = this.editMember;
-      this.editMember = new Member({ _id, accountId, memberId, newMember }, db);
+      const {
+        _id,
+        accountId,
+        memberId,
+        newMember
+      } = this.editMember;
+      this.editMember = new Member({
+        _id,
+        accountId,
+        memberId,
+        newMember
+      }, db);
     }
   }
 
@@ -223,12 +231,26 @@ class MembersStore {
       key.push(['○', c, i]);
       index[c] = i;
     }
-    return { key, index };
+    return {
+      key,
+      index
+    };
   }
 
-  changeDoc({ deleted, doc, id, ...rest }) {
+  changeDoc({
+    deleted,
+    doc,
+    id,
+    ...rest
+  }) {
     let member = this.members.get(id);
-    logit('changeDoc', { deleted, doc, id, member, rest });
+    logit('changeDoc', {
+      deleted,
+      doc,
+      id,
+      member,
+      rest
+    });
     if (deleted) {
       if (member && doc._rev === member._rev) this.members.delete(id);
       if (this.activeMemberId === id) this.activeMemberId = null;
@@ -239,7 +261,13 @@ class MembersStore {
     } else {
       if (doc._rev === member._rev) return; // we already know about this
       if (!doc._id) {
-        logit('changeDoc bad', { deleted, doc, id, member, rest });
+        logit('changeDoc bad', {
+          deleted,
+          doc,
+          id,
+          member,
+          rest
+        });
         return;
       }
       member.updateDocument(doc);
@@ -262,14 +290,6 @@ class MembersStore {
         .filter(doc => doc.type === 'member')
         .sort(lastnameCmp)
         .map(doc => this.addMember(doc));
-      if (typeof window !== 'undefined') {
-        const savedValues = localStorage.getItem('stEdsRouter');
-        if (getSettings('router.enabled') && savedValues) {
-          const memId = JSON.parse(savedValues).memberId;
-          if (this.members.has(memId))
-            this.activeMemberId = JSON.parse(savedValues).memberId;
-        }
-      }
       this.loaded = true;
     });
   }

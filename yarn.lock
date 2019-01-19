@@ -11,6 +11,13 @@
     getmac "^1.4.6"
     logit "https://github.com/AidanNichol/logit"
 
+"StEdsSettings@https://github.com/AidanNichol/StEdsSettings":
+  version "1.0.0"
+  resolved "https://github.com/AidanNichol/StEdsSettings#7eaad3c79dc8191c97ae35c3443dfe7aeb2a4082"
+  dependencies:
+    conf "^2.0.0"
+    getmac "^1.4.6"
+
 abstract-leveldown@^4.0.0, abstract-leveldown@~4.0.0:
   version "4.0.3"
   resolved "http://registry.npmjs.org/abstract-leveldown/-/abstract-leveldown-4.0.3.tgz#cb636f4965fbe117f5c8b76a7d51dd42aaed0580"
@@ -472,7 +479,7 @@ lodash, lodash@^4.17.11:
 
 "logit@http://github.com/AidanNichol/logit":
   version "1.0.0"
-  resolved "http://github.com/AidanNichol/logit#5f6d2ded75c2c42c5c9c3cc1d1d9dccaca0284f5"
+  resolved "http://github.com/AidanNichol/logit#b1b0ce297068d1eb423ff0bce0067228f79f0edf"
   dependencies:
     debug "^4.1.0"
     lodash "^4.17.11"
@@ -787,13 +794,6 @@ semver@^5.4.1, semver@^5.5.0:
 set-blocking@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/set-blocking/-/set-blocking-2.0.0.tgz#045f9782d011ae9a6803ddd382b24392b3d890f7"
-
-"settings@https://github.com/AidanNichol/StEdsSettings":
-  version "1.0.0"
-  resolved "https://github.com/AidanNichol/StEdsSettings#c37d2b8eef08679a952f522c7a39fe5cfb65b9cf"
-  dependencies:
-    conf "^2.0.0"
-    getmac "^1.4.6"
 
 signal-exit@^3.0.0, signal-exit@^3.0.2:
   version "3.0.2"
