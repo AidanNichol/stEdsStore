@@ -27,7 +27,7 @@ const init = async (db, emitter) => {
   logit('storeLoading', 'WS');
   await AS.init(db);
   logit('storeLoading', 'AS');
-  emitter.emit('startMonitoring', db);
+  emitter && emitter.emit('startMonitoring', db);
 };
 
 module.exports = {
