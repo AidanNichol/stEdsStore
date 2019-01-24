@@ -82,17 +82,16 @@ class AccountsStore {
   }
 
   createNewAccount(accId, members) {
-    logit('createNewAccount', accId, members);
-    this.addAccount({ _id: accId, members });
+    let acc = this.accounts.get(accId);
+    logit('createNewAccount', accId, members, acc);
+    if (acc) acc.members.replace( [...acc.members, ...members]);
+    else {this.addAccount({ _id: accId, members });
+    acc = this.accounts.get(accId);}
     // this.activeAccountId = accId;
-    this.accounts.get(accId).dbUpdate();
+    acc.dbUpdate();
   }
 
-  //
-  // get periodStartDate() {
-  //   logit('periodStartDate', this.lastPaymentsBanked, this);
-  //   return new XDate(this.lastPaymentsBanked).toString('ddd dd MMM');
-  // }
+  
   getAccountStore() {
     const { loaded, activeAccountId, useFullHistory } = this;
     return { loaded, activeAccountId, useFullHistory };
