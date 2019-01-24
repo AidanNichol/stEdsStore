@@ -21,8 +21,7 @@ const MS = require('./MembersStore');
 const WS = require('./WalksStore');
 const DS = require('./DateStore');
 const PS = require('./PaymentsSummaryStore');
-let useFullHistory = require('StEdsSettings').get('useFullHistory');
-
+let { useFullHistory } = require('StEdsSettings');
 const {
   logger
 } = require('StEdsLogger');
@@ -297,6 +296,7 @@ class Account {
     return toJS(
       this.members.map(memId => {
         let mem = MS.members.get(memId);
+        if (!mem)return {};
         return {
           memId: memId,
           firstName: mem.firstName,

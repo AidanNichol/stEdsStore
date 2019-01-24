@@ -8,7 +8,7 @@ const {
   toJS,
   decorate,
 } = require('mobx');
-const useFullHistory = require('StEdsSettings').get('useFullHistory');
+const { useFullHistory } = require('StEdsSettings');
 
 let db;
 const R = require('ramda');
