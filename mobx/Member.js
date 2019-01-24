@@ -21,6 +21,7 @@ class Member {
     this.nextOfKin = '';
     this.medical = '';
     this.memberStatus = 'Guest';
+    this.newMember = false;
     this.roles = '';
     this.suspended = false;
     this.deleteState = '';
