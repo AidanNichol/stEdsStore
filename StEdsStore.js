@@ -1,19 +1,23 @@
 // const Emittery = require('emittery');
 // const emitter = new Emittery();
+const logit = require('logit')(__filename);
 
 const DS = require('./mobx/DateStore');
 const WS = require('./mobx/WalksStore');
 const MS = require('./mobx/MembersStore');
 const AS = require('./mobx/AccountsStore');
 const PS = require('./mobx/PaymentsSummaryStore');
-const debug = require('debug')
-debug.enable('updates, -pouchdb*');
-var logit = debug('updates');
-logit.log = console.log.bind(console);
-logit.debug = console.debug.bind(console);
+const Member = require('./mobx/Member');
+const Booking = require('./mobx/Booking');
+const AccLog = require('./mobx/AccLog');
+const eventBus = require('./mobx/eventBus');
+const signinState = require('./mobx/signinState');
+
+// logit.log = console.log.bind(console);
+// logit.debug = console.debug.bind(console);
 console.log('logit enabled:', logit.enabled);
 
-logit.debug('debug');
+// logit.debug('debug');
 
 const init = async (db, emitter) => {
   logit('storeLoading', 'start');
@@ -36,5 +40,10 @@ module.exports = {
   MS,
   AS,
   PS,
+  Member,
+  Booking,
+  AccLog,
+  eventBus,
+  signinState,
   init
 };
