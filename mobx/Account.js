@@ -880,7 +880,7 @@ const getNewestDate = (...args) => {
       item :
       item.dat;
     return dat > newest ? dat : newest;
-  }, '000-00-00');
+  }, '2000-01-01T00:00:01.000');
 };
 
 const getOldestDate = (...args) => {
