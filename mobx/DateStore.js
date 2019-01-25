@@ -1,4 +1,8 @@
-const XDate = require('xdate');
+const {format, addMilliseconds, differenceInMonths, getDay,
+addDays, addWeeks, addMonths, addYears} = require('date-fns');
+const fmtFp = require('date-fns/fp');
+const formatDate = fmtFp('yyyy-MM-dd');
+const formatISOdate = fmtFp("yyyy-MM-dd'T'HH:mm:ss.SSS");
 const { observable, computed, decorate } = require('mobx');
 // const Logit = require( 'logit');
 // var logit = Logit(__filename);
@@ -9,10 +13,10 @@ class DateStore {
   constructor(today) {
     this.testing = false;
     if (today) {
-      this.today = new XDate(today);
+      this.today = new Date(today);
       this.testing = true;
     } else {
-      this.today = new XDate();
+      this.today = new Date();
     }
     this.setNewDate = this.setNewDate.bind(this);
     console.log(this);
@@ -23,47 +27,40 @@ class DateStore {
   }
 
   datetimePlus1(oldDate, inc = 1) {
-    return new XDate(oldDate).addMilliseconds(inc).toString('i');
+    return formatISOdate(addMilliseconds(new Date(oldDate), inc));
   }
 
   dispDate(dat) {
-    const now = new XDate();
-    const tdat = new XDate(dat);
-    return tdat.toString(tdat.diffMonths(now) > 6 ? 'dd MMM, yyyy' : 'dd MMM HH:mm');
+    const now = new Date();
+    const tdat = new Date(dat);
+    return format(tdat, differenceInMonths(tdat, now) > 6 ? 'dd MMM, yyyy' : 'dd MMM HH:mm');
   }
 
   get dayNo() {
-    console.log('getDay', this.today.getDay(), this.today.toString('ddd'));
-    return this.today.getDay();
+    return getDay(this.today);
   }
 
   get todaysDate() {
-    return this.today.toString('yyyy-MM-dd');
+    return formatDate(this.today);
   }
   getLogTime(today = new Date()) {
-    return new XDate(today).toString('i');
+    return formatISOdate(today);
   }
 
   get now() {
-    return new XDate().toString('yyyy-MM-dd HH:mm');
+    return format(new Date(), 'yyyy-MM-dd HH:mm');
   }
 
   get prevDate() {
-    return this.today
-      .clone()
-      .addDays(-55)
-      .toString('yyyy-MM-dd');
+    return formatDate(addDays(this.today, -55));
   }
 
   get lastAvailableDate() {
-    return this.today
-      .clone()
-      .addDays(59)
-      .toString('yyyy-MM-dd');
+    return formatDate(addDays(this.today, 59));
   }
 
   get logTime() {
-    return new XDate().toString('i');
+    return formatISOdate(new Date());
   }
   datetimeIsRecent(datStr) {
     return this.datetimeIsToday(datStr);
@@ -73,16 +70,16 @@ class DateStore {
   }
 
   dateMinus3Weeks(dat) {
-    return new XDate(dat).addWeeks(-4).toString('yyyy-MM-dd');
+    return formatDate(addWeeks(new Date(dat), -4));
   }
   date1YearAgo(dat) {
-    return (dat ? new XDate(dat) : new XDate()).addYears(-1).toString('yyyy-MM-dd');
+    return formatDate(addYears((dat ? new Date(dat) : new Date()), -1));
   }
   dateNmonthsAgo(dat, n) {
-    return new XDate(dat).addMonths(-1 * n).toString('yyyy-MM-dd');
+    return formatDate(addMonths(new Date(dat), -1 * n));
   }
   datePlusNDays(dat, n) {
-    return new XDate(dat).addDays(-1 * n).toString('yyyy-MM-dd');
+    return formatDate(addDays(new Date(dat), -1 * n));
   }
 }
 decorate(DateStore, {
@@ -99,8 +96,8 @@ const dateStore = new DateStore();
 
 if (!dateStore.testing) {
   setInterval(() => {
-    const newToday = new XDate();
-    if (newToday.toString('yyyy-MM-dd') !== dateStore.todaysDate)
+    const newToday = new Date();
+    if (formatDate(newToday) !== dateStore.todaysDate)
       dateStore.setNewDate(newToday);
     dateStore.setNewDate(newToday);
   }, 60000);
