@@ -1,5 +1,5 @@
 const {format, addMilliseconds, differenceInMonths, getDay,
-addDays, addWeeks, addMonths, addYears} = require('date-fns');
+addDays, addWeeks, addMonths, addYears, parseISO} = require('date-fns');
 const {format:fmtFp} = require('date-fns/fp');
 const formatDate = fmtFp('yyyy-MM-dd');
 const formatISOdate = fmtFp("yyyy-MM-dd'T'HH:mm:ss.SSS");
@@ -27,12 +27,12 @@ class DateStore {
   }
 
   datetimePlus1(oldDate, inc = 1) {
-    return formatISOdate(addMilliseconds(new Date(oldDate), inc));
+    return formatISOdate(addMilliseconds(parseISO(oldDate), inc));
   }
 
   dispDate(dat) {
     const now = new Date();
-    const tdat = new Date(dat);
+    const tdat = parseISO(dat);
     return format(tdat, differenceInMonths(tdat, now) > 6 ? 'dd MMM, yyyy' : 'dd MMM HH:mm');
   }
 
@@ -70,13 +70,13 @@ class DateStore {
   }
 
   dateMinus3Weeks(dat) {
-    return formatDate(addWeeks(new Date(dat), -4));
+    return formatDate(addWeeks(parseISO(dat), -4));
   }
   date1YearAgo(dat) {
-    return formatDate(addYears((dat ? new Date(dat) : new Date()), -1));
+    return formatDate(addYears((dat ? parseISO(dat) : new Date()), -1));
   }
   dateNmonthsAgo(dat, n) {
-    return formatDate(addMonths(new Date(dat), -1 * n));
+    return formatDate(addMonths(parseISO(dat), -1 * n));
   }
   datePlusNDays(dat, n) {
     return formatDate(addDays(new Date(dat), -1 * n));
