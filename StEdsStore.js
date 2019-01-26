@@ -1,6 +1,6 @@
 // const Emittery = require('emittery');
 // const emitter = new Emittery();
-const logit = require('logit')(__filename);
+const logit = require('logit')(__filename+'.');
 
 const DS = require('./mobx/DateStore');
 const WS = require('./mobx/WalksStore');
