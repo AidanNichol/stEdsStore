@@ -1,6 +1,6 @@
 {
   "name": "StEdsStore",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "StEdwards Booking System Mobx Data Store",
   "main": "index.js",
   "repository": {
