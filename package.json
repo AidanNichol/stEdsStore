@@ -2,7 +2,7 @@
   "name": "StEdsStore",
   "version": "1.0.3",
   "description": "StEdwards Booking System Mobx Data Store",
-  "main": "StEdsStore.js",
+  "main": "index.js",
   "repository": {
     "url": "https://github.com/AidanNichol/StEdsStore",
     "type": "git"
