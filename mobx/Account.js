@@ -14,8 +14,8 @@ const MS = require('./MembersStore');
 const WS = require('./WalksStore');
 const DS = require('./DateStore');
 const PS = require('./PaymentsSummaryStore');
-let { useFullHistory } = require('@steds/settings');
-const { logger } = require('@steds/logger');
+let { useFullHistory } = require('StEdsSettings');
+const { logger } = require('StEdsLogger');
 
 const AccLog = require('./AccLog');
 let limit;
