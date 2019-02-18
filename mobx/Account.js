@@ -7,24 +7,15 @@ const _ = require('lodash');
 // const {sprintf} = require( 'sprintf-js');
 const Logit = require('logit');
 var logit = Logit(__filename);
-const {
-  observable,
-  computed,
-  toJS,
-  reaction,
-  action,
-  decorate
-} = require('mobx');
+const { observable, computed, toJS, reaction, action, decorate } = require('mobx');
 const FundsManager = require('./fundsManager');
 const FundsManager0 = require('./fundsManager0');
 const MS = require('./MembersStore');
 const WS = require('./WalksStore');
 const DS = require('./DateStore');
 const PS = require('./PaymentsSummaryStore');
-let { useFullHistory } = require('StEdsSettings');
-const {
-  logger
-} = require('StEdsLogger');
+let { useFullHistory } = require('@steds/settings');
+const { logger } = require('@steds/logger');
 
 const AccLog = require('./AccLog');
 let limit;
@@ -56,9 +47,12 @@ class Account {
     this.type = 'account';
     this._conflicts = [];
     this.members = accountDoc.members || [];
-    this.logs = observable.map({}, {
-      deep: false
-    });
+    this.logs = observable.map(
+      {},
+      {
+        deep: false,
+      },
+    );
     // this.accountId;
     this.latePaymentLogs = [];
 
@@ -77,7 +71,7 @@ class Account {
     _.merge(this, accountDoc);
     // this.updateDocument(accountDoc);
     this.logger = logger.child({
-      accId: `${this._id} - ${this.name}`
+      accId: `${this._id} - ${this.name}`,
     });
   }
 
@@ -91,7 +85,7 @@ class Account {
     let nameMap = this.members.reduce((value, memId) => {
       let mem = MS.members.get(memId) || {
         firstName: '????',
-        lastName: memId
+        lastName: memId,
       };
       let lName = mem.lastName;
       value[lName] = [...(value[lName] || []), mem.firstName];
@@ -106,7 +100,7 @@ class Account {
     return this.members.map(memId => {
       let mem = MS.members.get(memId) || {
         firstName: '????',
-        lastName: memId
+        lastName: memId,
       };
       return mem.firstName + ' ' + mem.lastName;
     });
@@ -116,7 +110,7 @@ class Account {
     let nameMap = this.members.reduce((value, memId) => {
       let mem = MS.members.get(memId) || {
         firstName: '????',
-        lastName: memId
+        lastName: memId,
       };
       let lName = mem.lastName;
       value[lName] = [...(value[lName] || []), mem.firstName];
@@ -208,7 +202,7 @@ class Account {
       return {
         _id: this._id,
         _rev: rev,
-        _deleted: true
+        _deleted: true,
       };
     });
     let res = await db.bulkDocs(docs);
@@ -216,12 +210,7 @@ class Account {
     this._conflicts = [];
   }
 
-  makePaymentToAccount({
-    paymentType: req,
-    amount,
-    note,
-    inFull
-  }) {
+  makePaymentToAccount({ paymentType: req, amount, note, inFull }) {
     // doer = yield select((state)=>state.signin.memberId);
     const who = 'M1180';
     var logRec = {
@@ -231,13 +220,13 @@ class Account {
       type: 'A',
       amount,
       note,
-      inFull
+      inFull,
     };
     this.logs.set(logRec.dat, new AccLog(logRec));
     const loggerData = {
       req,
       amount,
-      inFull
+      inFull,
     };
     if (note && note !== '') loggerData.note = note;
     this.logger.info(loggerData, 'Payment');
@@ -249,9 +238,7 @@ class Account {
     let conflicts = this._conflicts;
     if (!_.isEmpty(added)) {
       Object.values(added).forEach(log => {
-        var logRec = { ...log,
-          note: (log.note || '') + ' (?)'
-        };
+        var logRec = { ...log, note: (log.note || '') + ' (?)' };
         this.logs.set(logRec.dat, new AccLog(logRec));
       });
       // doer = yield select((state)=>state.signin.memberId);
@@ -277,18 +264,21 @@ class Account {
   get accountFrame() {
     const members = new Map(
       this.members
-      .map(memId => {
-        return [memId, {
-          memId,
-          name: MS.members.get(memId).firstName
-        }];
-      })
-      .sort(cmpName),
+        .map(memId => {
+          return [
+            memId,
+            {
+              memId,
+              name: MS.members.get(memId).firstName,
+            },
+          ];
+        })
+        .sort(cmpName),
     );
     return {
       accId: this._id,
       members,
-      sortname: this.sortname
+      sortname: this.sortname,
     };
   }
 
@@ -296,7 +286,7 @@ class Account {
     return toJS(
       this.members.map(memId => {
         let mem = MS.members.get(memId);
-        if (!mem)return {};
+        if (!mem) return {};
         return {
           memId: memId,
           firstName: mem.firstName,
@@ -352,7 +342,7 @@ class Account {
         amount: 0,
         text: '',
         machine: 'auto',
-        balance: 0
+        balance: 0,
       };
       aLog.req = final ? '__' : '_';
       if (!final) aLog.restartPoint = true;
@@ -468,10 +458,8 @@ class Account {
       resortAndAdjustBalance(clearedLogs, prevBalance, historic, hideable);
       bLogs.unshift(
         ..._.flatten(availBlogs)
-        .map(log => ({ ...log,
-          outOfSequence
-        }))
-        .sort(cmpDate),
+          .map(log => ({ ...log, outOfSequence }))
+          .sort(cmpDate),
       );
       mergedlogs.push(...clearedLogs);
       // clearedLogs = [];
@@ -479,12 +467,7 @@ class Account {
       //┃   Add in the payment record suitably ajdusted            ┃
       //┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
       balance = funds.balance;
-      aLog = { ...aLog,
-        balance,
-        toCredit: -balance,
-        historic,
-        hideable
-      };
+      aLog = { ...aLog, balance, toCredit: -balance, historic, hideable };
       setLogsFrom(aLog, clearedLogs, bLogs);
       setOldLogs(aLog, clearedLogs);
       let restartPt = isRestartPoint(balance, mergedlogs, bLogs);
@@ -516,9 +499,7 @@ class Account {
       balance -= bLog.amount || 0;
       // bLog.hideable = hideable && balance === 0;
       // bLog.historic = historic;
-      unclearedLogs.push({ ...bLog,
-        balance
-      });
+      unclearedLogs.push({ ...bLog, balance });
       if (_.isEmpty(bLogs)) continue;
       if (!isRestartPoint(balance, [newestClearedLog, unclearedLogs], bLogs)) continue;
       if (!isBooking(bLog)) continue;
@@ -673,11 +654,12 @@ class Account {
       }
     }
     traceMe && this.logTableToConsole(logs);
-    traceMe && logit('second pass', logs, {
-      lastHistory,
-      lastHideable,
-      lastResolved
-    });
+    traceMe &&
+      logit('second pass', logs, {
+        lastHistory,
+        lastHideable,
+        lastResolved,
+      });
 
     /*------------------------------------------------------------------------*/
     /*    third pass over the data to work out whick walks were paid for      */
@@ -810,9 +792,7 @@ class Account {
       const diffs = whatsDifferent(newVal, _.pick(actLog, props));
       console.log(log.dat, log.amount, diffs);
       delete actLog.oldLogs;
-      var logRec = { ...actLog,
-        ...newVal
-      };
+      var logRec = { ...actLog, ...newVal };
       this.logs.set(log.dat, new AccLog(logRec));
       changed = true;
     }
@@ -822,7 +802,7 @@ class Account {
       logit('fixupAccLogs changes made', {
         id: this._id,
         old: this.logs,
-        mergedlogs
+        mergedlogs,
       });
       await this.dbUpdate();
     }
@@ -848,7 +828,7 @@ class Account {
     let sum = {};
     confs.forEach((conf, i) => {
       this.confLogger = this.logger.child({
-        confRev: conf._rev
+        confRev: conf._rev,
       });
       (conf.log || []).forEach(lg => {
         let [dat, , , , req, amount] = lg;
@@ -874,11 +854,11 @@ class Account {
 /*-------------------------------------------------*/
 const getNewestDate = (...args) => {
   return args.reduce((newest, item) => {
-    const dat = _.isArray(item) ?
-      getNewestDate(...item) :
-      _.isString(item) ?
-      item :
-      item.dat;
+    const dat = _.isArray(item)
+      ? getNewestDate(...item)
+      : _.isString(item)
+      ? item
+      : item.dat;
     return dat > newest ? dat : newest;
   }, '2000-01-01T00:00:01.000');
 };
@@ -887,11 +867,11 @@ const getOldestDate = (...args) => {
   return args
     .filter(log => log)
     .reduce((oldest, log) => {
-      const dat = _.isArray(log) ?
-        getOldestDate(...log) :
-        _.isString(log) ?
-        log :
-        log.dat;
+      const dat = _.isArray(log)
+        ? getOldestDate(...log)
+        : _.isString(log)
+        ? log
+        : log.dat;
       return dat < oldest ? dat : oldest;
     }, '9999-99-99');
 };
@@ -941,11 +921,7 @@ function findRestartPoint(aLogs, darkAgesStarts) {
   let ok = true;
   let lastDark = -1;
   for (let i = 0; i < aLogs.length; i++) {
-    const {
-      logsFrom,
-      restartPoint,
-      req
-    } = aLogs[i];
+    const { logsFrom, restartPoint, req } = aLogs[i];
     if (req === '__') return i;
     if (logsFrom && logsFrom < darkAgesStarts) {
       ok = false;
