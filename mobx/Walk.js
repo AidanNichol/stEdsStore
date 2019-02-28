@@ -12,7 +12,7 @@ var logit = Logit(__filename);
 const { observable, computed, action, autorun, toJS, decorate } = require('mobx');
 const Booking = require('./Booking');
 const MS = require('./MembersStore');
-const memberName = memId => (MS.members.get(memId) || {}).fullName;
+const memberName = memId => (MS.members.get(memId) || {fullName:`unknown ${memId}`}).fullName;
 class Walk {
   // addMemberName(memId){
   //   // let memName = MS.members.get(memId).fullName;
