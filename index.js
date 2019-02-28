@@ -12,7 +12,9 @@ const Booking = require('./mobx/Booking');
 const AccLog = require('./mobx/AccLog');
 const eventBus = require('./mobx/eventBus');
 const signinState = require('./mobx/signinState');
-
+const sleep = milliseconds => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+};
 // logit.log = console.log.bind(console);
 // logit.debug = console.debug.bind(console);
 console.log('logit enabled:', logit.enabled);
@@ -21,11 +23,9 @@ console.log('logit enabled:', logit.enabled);
 
 const init = async (db, emitter) => {
   let i = 0;
-  logit('db_ready', process.env.STEDS_db_ready);
   while (process.env.STEDS_db_ready !== 'Yes') {
-    await setTimeout(() => {
-      logit('db_ready', process.env.STEDS_db_ready);
-    }, 2000);
+    logit('db_ready', process.env.STEDS_db_ready);
+    await sleep(2000);
     if (i++ > 30) break;
   }
   logit('db_ready', process.env.STEDS_db_ready);
