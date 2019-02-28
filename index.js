@@ -20,6 +20,15 @@ console.log('logit enabled:', logit.enabled);
 // logit.debug('debug');
 
 const init = async (db, emitter) => {
+  let i = 0;
+  logit('db_ready', process.env.STEDS_preparing_db);
+  while (process.env.STEDS_db_ready !== 'Yes') {
+    await setTimeout(() => {
+      logit('db_ready', process.env.STEDS_preparing_db);
+    }, 2000);
+    if (i++ > 30) break;
+  }
+  logit('db_ready', process.env.STEDS_preparing_db);
   logit('storeLoading', 'start');
   const info = await db.info();
   logit('storeLoading', 'info', info);
