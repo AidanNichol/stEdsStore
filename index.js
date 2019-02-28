@@ -21,14 +21,14 @@ console.log('logit enabled:', logit.enabled);
 
 const init = async (db, emitter) => {
   let i = 0;
-  logit('db_ready', process.env.STEDS_preparing_db);
+  logit('db_ready', process.env.STEDS_db_ready);
   while (process.env.STEDS_db_ready !== 'Yes') {
     await setTimeout(() => {
-      logit('db_ready', process.env.STEDS_preparing_db);
+      logit('db_ready', process.env.STEDS_db_ready);
     }, 2000);
     if (i++ > 30) break;
   }
-  logit('db_ready', process.env.STEDS_preparing_db);
+  logit('db_ready', process.env.STEDS_db_ready);
   logit('storeLoading', 'start');
   const info = await db.info();
   logit('storeLoading', 'info', info);
@@ -54,5 +54,5 @@ module.exports = {
   AccLog,
   eventBus,
   signinState,
-  init
+  init,
 };
