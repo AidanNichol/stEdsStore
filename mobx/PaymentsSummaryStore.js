@@ -1,10 +1,4 @@
-const {
-  observable,
-  computed,
-  action,
-  autorun,
-  decorate
-} = require('mobx');
+const { observable, computed, action, autorun, decorate } = require('mobx');
 let db;
 const XDate = require('xdate');
 const Logit = require('logit');
@@ -51,17 +45,12 @@ class PaymentsSummaryStore {
   /* replication has a new or changed account document                      */
   /*------------------------------------------------------------------------*/
 
-  changeDoc({
-    deleted,
-    doc,
-    id,
-    ...rest
-  }) {
+  changeDoc({ deleted, doc, id, ...rest }) {
     logit('changeDoc', {
       deleted,
       doc,
       id,
-      rest
+      rest,
     });
     if (deleted) return;
     if (id <= this.id) return;
@@ -69,6 +58,12 @@ class PaymentsSummaryStore {
   }
 
   async bankMoney(doc) {
+    delete doc.accounts;
+    delete doc.cLogs;
+    doc.payments = Object.entries(doc.payments).map(pymnt => {
+      const { accId, accName, paymentsMade } = pymnt;
+      return { accId, accName, paymentsMade };
+    });
     logit('bankMoney', doc);
     await db.put(doc);
     this.changeBPdoc(doc);
