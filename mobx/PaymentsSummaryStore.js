@@ -60,7 +60,7 @@ class PaymentsSummaryStore {
   async bankMoney(doc) {
     delete doc.accounts;
     delete doc.cLogs;
-    doc.payments = Object.entries(doc.payments).map(pymnt => {
+    doc.payments = doc.payments.map(pymnt => {
       const { accId, accName, paymentsMade } = pymnt;
       return { accId, accName, paymentsMade };
     });
