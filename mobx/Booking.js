@@ -24,6 +24,7 @@ class Booking {
 
     this.status = '??';
     this.annotation = '';
+    this.lastUpdate = '';
     this.logs = observable.map({}, { deep: false });
     merge(this, accessors);
     (booking.logs || []).forEach(log =>
@@ -100,11 +101,7 @@ class Booking {
 
   updateBookingRequest(req) {
     if (this.status === req) return; // no change necessary
-    const isRequestReversal = this.isRequestReversal(req);
-    const recent = this.logsValues.filter(log => DS.datetimeIsRecent(log.dat));
-    const dontPenalize = recent && recent.length > 0 && isRequestReversal;
-    logit('cancelling', req, DS.todaysDate, this.walk.lastCancel, this.walk);
-    if (req === 'BX' && DS.todaysDate > this.walk.lastCancel && !dontPenalize) {
+    if (req === 'BX' && DS.todaysDate > this.walk.lastCancel) {
       logit('updateBookingRequest', 'yes! it is too late');
       req = this.status + 'L';
       this.paid = true;
@@ -114,6 +111,8 @@ class Booking {
     var newLog = { dat: DS.logTime, who: updater, req };
     this.walk.logger.info({ memId: this.memId, req }, 'Booking change');
     this.logs.set(newLog.dat, this.newBookingLog(newLog)); // adding new log
+    this.lastUpdate = newLog.dat;
+    this.walk.lastUpdate = newLog.dat;
   }
 
   isRequestReversal(req) {
