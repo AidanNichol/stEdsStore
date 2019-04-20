@@ -1,4 +1,5 @@
 // const mobx = require('mobx');
+const { ipcRenderer } = require('electron');
 let db;
 const emitter = require('./eventBus');
 const R = require('ramda');
@@ -190,8 +191,22 @@ class Account {
       .map(basicLog);
     // .map(log => _.pick(log, requiredLogProperties));
     logit('DB Update', newDoc, newDoc._deleted, this);
-    const res = await db.put(newDoc);
-    this._rev = res.rev;
+    try {
+      const res = await db.put(newDoc);
+      if (!res.ok || res.error) {
+        logit('db.put error', res);
+        alert(
+          'a problem occured trying to update the user account.\nError: ' +
+            JSON.stringify(res) +
+            '\nYour last change was not applied.\n' +
+            'In order to ensure the consistency of the data the application will be reloaded once you click OK',
+        );
+        ipcRenderer.send('reload-main', {});
+      }
+      this._rev = res.rev;
+    } catch (error) {
+      logit('**** error ****', error);
+    }
     // const info = await db.info();
     // logit('info', info);
     await emitter.emit('dbChanged', 'account changed');

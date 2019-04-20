@@ -1,3 +1,5 @@
+const { ipcRenderer } = require('electron');
+
 const R = require('ramda');
 const _ = require('lodash');
 let db;
@@ -214,7 +216,18 @@ class Walk {
   }
 
   async dbUpdate() {
-    const logFields = ['dat', 'req', 'who', 'machine', 'fixed'];
+    const logFields = [
+      'dat',
+      'req',
+      'who',
+      'machine',
+      'fixed',
+      'delayedDat',
+      'note',
+      'clearedBy',
+      'restartPt',
+      'outstanding',
+    ];
     logit('DB Update start', this);
     let { _conflicts, logger, ...newDoc } = _.omitBy(toJS(this), _.isFunction); //eslint-disable-line no-unused-vars
     Object.entries(newDoc.bookings).map(([memId, booking]) => {
@@ -225,10 +238,24 @@ class Walk {
 
     // newDoc.logs = Object.values(newDoc.logs)
     logit('DB Update', newDoc, _conflicts, this);
-    const res = await db.put(newDoc);
-    this._rev = res.rev;
-    const info = await db.info();
-    logit('info', info);
+    try {
+      const res = await db.put(newDoc);
+      if (!res.ok || res.error) {
+        logit('db.put error', res);
+        alert(
+          'a problem occured trying to update the walk.\nError: ' +
+            JSON.stringify(res) +
+            '\nYour last change was not applied.\n' +
+            'In order to ensure the consistency of the data the application will be reloaded once you click OK',
+        );
+        ipcRenderer.send('reload-main', {});
+      }
+      this._rev = res.rev;
+    } catch (error) {
+      logit('**** error ****', error);
+    }
+    // const info = await db.info();
+    // logit('info', info);
     await emitter.emit('dbChanged', 'walk changed');
   }
   updateDocument(walkDoc) {

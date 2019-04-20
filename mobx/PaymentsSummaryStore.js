@@ -71,14 +71,16 @@ class PaymentsSummaryStore {
 
   async init(dbset) {
     db = dbset;
-    // const data = await db.allDocs({include_docs: true, conflicts: true, startkey: 'W', endkey: 'W9999999' });
-    const dataBP = await db.allDocs({
+    const opts = {
       descending: true,
       limit: 1,
       include_docs: true,
       startkey: 'BP9999999',
       endkey: 'BP00000000',
-    });
+    };
+    // const data = await db.allDocs({include_docs: true, conflicts: true, startkey: 'W', endkey: 'W9999999' });
+    let dataBP = await db.allDocs(opts);
+    if (!dataBP.ok) dataBP = await db.allDocs(opts);
     logit('load datasummaries', dataBP);
     if (dataBP.rows.length > 0) this.changeBPdoc(dataBP.rows[0].doc);
     this.loaded = true;
