@@ -13,7 +13,7 @@
     "StEdsLogger": "https://github.com/AidanNichol/StEdsLogger",
     "StEdsSettings": "https://github.com/AidanNichol/StEdsSettings",
     "emittery": "^0.4.1",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "logit": "https://github.com/AidanNichol/logit",
     "mobx": "^5.6.0",
     "ramda": "^0.26.1",
