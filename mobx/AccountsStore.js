@@ -1,4 +1,6 @@
 const { observable, computed, action, runInAction, autorun, decorate } = require('mobx');
+const { toJS } = require('mobx');
+
 let db;
 // const _ = require('lodash');
 const Logit = require('logit');
@@ -30,6 +32,21 @@ class AccountsStore {
   }
 
   // accountsLoading: () => accountsLoading;
+  async dumpData() {
+    try {
+      const oldData = await db.allDocs({ key: 'dumpDataV1' });
+      const data = oldData.rows.length > 0 ? oldData.rows[0].doc : { _id: 'dumpDataV1' };
+      logit('Dumping data to dumpDataV1');
+      data.accs = this.allAccountsStatus.map(acc => {
+        const accD = toJS(acc);
+        accD.logs = accD.logs.filter(l => !l.hideable && l.req[0] !== '_');
+        return accD;
+      });
+      await db.put(data);
+    } catch (error) {
+      logit('dumpData Error', error);
+    }
+  }
 
   get accountsValues() {
     return Array.from(this.accounts.values());
@@ -75,23 +92,26 @@ class AccountsStore {
 
   addAccounts(accounts) {
     // logit('accounts', accounts)
-    accounts.filter(account => account.type === 'account').map(account => {
-      // logit('account', account)
-      return this.addAccount(account);
-    });
+    accounts
+      .filter(account => account.type === 'account')
+      .map(account => {
+        // logit('account', account)
+        return this.addAccount(account);
+      });
   }
 
   createNewAccount(accId, members) {
     let acc = this.accounts.get(accId);
     logit('createNewAccount', accId, members, acc);
-    if (acc) acc.members.replace( [...acc.members, ...members]);
-    else {this.addAccount({ _id: accId, members });
-    acc = this.accounts.get(accId);}
+    if (acc) acc.members.replace([...acc.members, ...members]);
+    else {
+      this.addAccount({ _id: accId, members });
+      acc = this.accounts.get(accId);
+    }
     // this.activeAccountId = accId;
     acc.dbUpdate();
   }
 
-  
   getAccountStore() {
     const { loaded, activeAccountId, useFullHistory } = this;
     return { loaded, activeAccountId, useFullHistory };
