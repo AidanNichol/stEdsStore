@@ -12,10 +12,10 @@
   "dependencies": {
     "StEdsLogger": "https://github.com/AidanNichol/StEdsLogger",
     "StEdsSettings": "https://github.com/AidanNichol/StEdsSettings",
-    "emittery": "^0.4.1",
-    "lodash": "^4.17.11",
+    "emittery": "^0.5.1",
+    "lodash": "^4.17.15",
     "logit": "https://github.com/AidanNichol/logit",
-    "mobx": "^5.6.0",
+    "mobx": "^5.15.0",
     "ramda": "^0.26.1",
     "sprintf-js": "^1.1.2",
     "xdate": "^0.8.2"
