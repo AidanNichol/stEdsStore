@@ -34,12 +34,12 @@ class AccountsStore {
   // accountsLoading: () => accountsLoading;
   async dumpData() {
     try {
-      const oldData = await db.allDocs({ key: 'dumpDataV1' });
+      const oldData = await db.allDocs({ key: 'dumpDataV1', include_docs: true });
       const data = oldData.rows.length > 0 ? oldData.rows[0].doc : { _id: 'dumpDataV1' };
       logit('Dumping data to dumpDataV1');
       data.accs = this.allAccountsStatus.map(acc => {
         const accD = toJS(acc);
-        accD.logs = accD.logs.filter(l => !l.hideable && l.req[0] !== '_');
+        // accD.logs = accD.logs.filter(l => !l.hideable && l.req[0] !== '_');
         return accD;
       });
       await db.put(data);
